@@ -3,6 +3,7 @@ import tkinter
 import tensorflow
 from keras import layers
 from keras import models
+from tensorflow.python.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
 
@@ -49,9 +50,26 @@ valid_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_
 # Model
 
 model = models.Sequential()
+model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), input_shape=(240, 320, 3)))
+model.add(layers.MaxPooling2D(pool_size=(2, 2)))
+
+model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), padding='Same', activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+model.add(layers.Conv2D(filters=96, kernel_size=(3, 3), padding='Same', activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+model.add(layers.Conv2D(filters=96, kernel_size=(3, 3), padding='Same', activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
 model.add(layers.Flatten())
-model.add(layers.Dense(128, activation=tensorflow.nn.relu))
-model.add(layers.Dense(128, activation=tensorflow.nn.relu))
+model.add(layers.Dense(128, activation = tensorflow.nn.relu))
+
+# model = models.Sequential()
+# model.add(Conv2D(64,input_shape = (240,320,3),kernel_size = (3,3)))
+# model.add(layers.Flatten())
+# model.add(layers.Dense(128, activation=tensorflow.nn.relu))
+# model.add(layers.Dense(128, activation=tensorflow.nn.relu))
 
 
 
