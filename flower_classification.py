@@ -41,13 +41,18 @@ batch_size = 20
 t_steps = 3462/batch_size
 v_steps = 861/batch_size
 classes = 5
-flower_path = /*insert path */
+flower_path =  "C:/Users/omerrau/PycharmProjects/FlowerClassification/flower_classification.py"
 train_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_size), batch_size = batch_size, class_mode='categorical', subset='training')
 valid_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_size), batch_size = batch_size, class_mode = 'categorical', subset='validation')
 
 # Model
 
 model = models.Sequential()
+model.add(layers.Flatten())
+model.add(layers.Dense(128, activation=ImageDataGenerator.nn.relu))
+model.add(layers.Dense(128, activation=ImageDataGenerator.nn.relu))
+
+
 
 # use model.add() to add any layers you like
 # read Keras documentation to find which layers you can use:
@@ -61,11 +66,11 @@ model.add(layers.Dense(classes, activation='softmax'))
 
 # fill optimizer argument using one of keras.optimizers.
 # read Keras documentation : https://keras.io/models/model/
-optimizer =/*keras.optimizers*/
+optimizer ='adam'
 
 # fill loss argument using keras.losses.
 # reads Keras documentation https://keras.io/losses/
-loss =/*keras.losses*/
+loss ='sparse_categorical_crossentropy'
 model.compile(loss= loss ,optimizer=optimizer ,metrics=['accuracy'])
 
 # you can change number of epochs by changing the value of the 'epochs' paramter
