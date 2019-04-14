@@ -1,5 +1,6 @@
 import keras
 import tkinter
+import tensorflow
 from keras import layers
 from keras import models
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
@@ -41,7 +42,7 @@ batch_size = 20
 t_steps = 3462/batch_size
 v_steps = 861/batch_size
 classes = 5
-flower_path =  "C:/Users/omerrau/PycharmProjects/FlowerClassification/flower_classification.py"
+flower_path = 'C:\\Users\\Shalev\\Desktop\\flowers'
 train_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_size), batch_size = batch_size, class_mode='categorical', subset='training')
 valid_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_size), batch_size = batch_size, class_mode = 'categorical', subset='validation')
 
@@ -49,8 +50,8 @@ valid_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_
 
 model = models.Sequential()
 model.add(layers.Flatten())
-model.add(layers.Dense(128, activation=ImageDataGenerator.nn.relu))
-model.add(layers.Dense(128, activation=ImageDataGenerator.nn.relu))
+model.add(layers.Dense(128, activation=tensorflow.nn.relu))
+model.add(layers.Dense(128, activation=tensorflow.nn.relu))
 
 
 
