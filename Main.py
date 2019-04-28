@@ -3,38 +3,30 @@ from keras.models import load_model
 from keras.preprocessing import image as img
 import tkinter as tk
 from tkinter import Tk, Frame, StringVar, Label, Button, Entry, messagebox, filedialog, END
-from tkinter.ttk import Treeview, Separator, Scrollbar
+from tkinter.ttk import Treeview, Scrollbar
 import os
 import pandas as pd
 import numpy as np
 
-
-# gets the name of the classification for an image the model predicted
-# parameter1 - the results of the image's prediction
-def get_prediction(image_prediction):
-    classifications = ['daisy', 'dandelion', 'rose', 'sunflower', 'tulip']
-    for i in range(len(image_prediction[0])):
-        if not image_prediction[0][i] == 0:
-            return classifications[i]
-    return None
+daisy_counter = 0
+dandelion_counter = 0
+rose_counter = 0
+sunflower_counter = 0
+tulip_counter = 0
 
 
-# adds an image's prediction's result to the total result data frame
-# parameter1 - the results of the model's predictions
-# parameter2 - a list with the result of the image's prediction
-def add_to_result(result, new_classification):
-    last_row_number = result.index.max()
-    if not np.isnan(last_row_number):
-        result.loc[last_row_number + 1] = new_classification
-    else:
-        result.loc[0] = new_classification
+# removes the results of the prediction from display
+def clear():
+    widgets = result_frame.winfo_children()
+    for widget in widgets:
+        widget.destroy()
 
 
 # saves the prediction's results as a csv file
 # parameter1 - the result of the prediction
 def save_results(result):
     file = filedialog.asksaveasfile(mode='w', defaultextension=".csv")
-    if file is None:  # asksaveasfile return `None` if dialog closed with "cancel".
+    if file is None:
         return
     result.to_csv(file, index=None)
 
@@ -44,8 +36,7 @@ def save_results(result):
 def show_results(result):
     frame_height = result_frame.winfo_height()
     tree = Treeview(result_frame, columns=(1, 2), height=frame_height, show="headings")
-    tree.pack(side='left')
-    # tree.pack(side='left', fill='both', expand=True)
+    tree.pack(side='left', fill='both', expand=True)
 
     tree.heading(1, text="Image Name")
     tree.heading(2, text="Classification Prediction")
@@ -53,14 +44,48 @@ def show_results(result):
     tree.column(2)
 
     scroll = Scrollbar(result_frame, orient="vertical", command=tree.yview)
-    scroll.pack(side='right', fill='y')
-    # scroll.pack(side='left', fill='y')
+    scroll.pack(side='left', fill='y')
     tree.configure(yscrollcommand=scroll.set)
 
     for index, row in result.iterrows():
         tree.insert("", END, values=(row[0], row[1]))
     save_button = Button(result_frame, text="Save Results", command=lambda: save_results(result))
     save_button.pack(side='right')
+
+
+# gets the name of the classification for an image the model predicted
+# parameter1 - the results of the image's prediction
+def get_prediction(image_prediction):
+    global rose_counter
+    global daisy_counter
+    global dandelion_counter
+    global tulip_counter
+    global sunflower_counter
+    classifications = ['daisy', 'dandelion', 'rose', 'sunflower', 'tulip']
+    for i in range(len(image_prediction[0])):
+        if not image_prediction[0][i] == 0:
+            if classifications[i] == 'rose':
+                rose_counter = rose_counter + 1
+            if classifications[i] == 'daisy':
+                daisy_counter = daisy_counter + 1
+            if classifications[i] == 'dandelion':
+                dandelion_counter = dandelion_counter + 1
+            if classifications[i] == 'sunflower':
+                sunflower_counter = sunflower_counter + 1
+            if classifications[i] == 'tulip':
+                tulip_counter = tulip_counter + 1
+            return classifications[i]
+    return None
+
+
+# turns an image into an array that can be inserted into the prediction model
+# parameter1 - the path to the main folder that contains the folders which contains the flower images
+# parameter2 - the sub-folder's name
+# parameter3 - the image's name
+def handle_image(path, folder_name, image_name):
+    image = img.load_img(path + '\\' + folder_name + '\\' + image_name, target_size=(128, 128))
+    image = img.img_to_array(image)
+    return np.expand_dims(image, axis=0)
 
 
 # using given model to predict given path of pictures' classifications
@@ -72,23 +97,19 @@ def predict(model, path):
     for folder_name in [i for i in os.listdir(path)]:
         for image_name in [i for i in os.listdir(path + '\\' + folder_name)]:
             try:
-                image = img.load_img(path + '\\' + folder_name + '\\' + image_name, target_size=(128, 128))
-                image = img.img_to_array(image)
-                image = np.expand_dims(image, axis=0)
+                image = handle_image(path, folder_name, image_name)
                 image_prediction = model.predict(image)
-                image_prediction[0] = np.around(image_prediction[0], decimals=3)
+                # image_prediction[0] = np.around(image_prediction[0], decimals=3)
                 classification_prediction = get_prediction(image_prediction)
-                add_to_result(result, [image_name, classification_prediction])
+                new_classification = [image_name, classification_prediction]
+                last_row_number = result.index.max()
+                if not np.isnan(last_row_number):
+                    result.loc[last_row_number + 1] = new_classification
+                else:
+                    result.loc[0] = new_classification
             except:
                 print("The image: " + image_name + " is invalid!")
     return result
-
-
-# removes the results of the prediction from display
-def clear(frame):
-    frame.destroy()
-    result_frame = Frame(root)
-    result_frame.pack(side='bottom', fill='both', expand=True)
 
 
 # gets the chosen path
@@ -138,41 +159,50 @@ def check_and_predict(path_to_model, path_to_flowers_folder):
             messagebox.showerror("Error", "Couldn't load the model!")
         if model is not None:
             result = predict(model, path_to_flowers_folder.get())
+            print("daisy: " + str(daisy_counter))
+            print("dandelion: " + str(dandelion_counter))
+            print("rose: " + str(rose_counter))
+            print("sunflower: " + str(sunflower_counter))
+            print("tulip: " + str(tulip_counter))
             show_results(result)
 
 
+# initializes the labels and buttons
+# parameter1 - the path to the model's file
+# parameter2 - the path to the flowers' images folder
+def init_gui(path_to_model, path_to_flowers_folder):
+    model_label = Label(button_frame, text="Insert the path for the model:")
+    model_label.grid(column=0, row=1, padx=4, pady=4)
+    model_text_box = Entry(button_frame, width=40, textvariable=path_to_model)
+    model_text_box.grid(column=1, row=1, padx=4, pady=4)
+    model_button = Button(button_frame, text="Browse", command=lambda: get_path(path_to_model, 'm'))
+    model_button.grid(column=2, row=1, padx=4, pady=4)
+    image_label = Label(button_frame, text="Insert the path for images' folder:")
+    image_label.grid(column=0, row=2, padx=4, pady=4)
+    image_text_box = Entry(button_frame, width=40, textvariable=path_to_flowers_folder)
+    image_text_box.grid(column=1, row=2, padx=4, pady=4)
+    image_button = Button(button_frame, text="Browse", command=lambda: get_path(path_to_flowers_folder, 'f'))
+    image_button.grid(column=2, row=2, padx=4, pady=4)
+    predict_button = Button(button_frame, text="Predict", command=lambda: check_and_predict(path_to_model, path_to_flowers_folder))
+    predict_button.grid(column=0, row=3, padx=5, pady=8)
+    clear_button = Button(button_frame, text="Clear", command=lambda: clear())
+    clear_button.grid(column=1, row=3, padx=5, pady=8)
+
+
+# create the main window
 root = Tk()
 root.title('Flower Classification Interface')
-root.geometry('500x500')
+root.geometry('500x300')
 path_to_model = StringVar()
 path_to_flowers_folder = StringVar()
 
-# creates the frames and separator
+# create the frames
 button_frame = Frame(root)
-separator = Separator(root, orient='horizontal')
 result_frame = Frame(root)
 button_frame.pack(side='top', fill='both', expand=True)
-separator.pack(side='top', fill='x')
-# separator.pack(side='top', fill='x', expand=True)
 result_frame.pack(side='bottom', fill='both', expand=True)
 
-# init_gui(path_to_model, path_to_flowers_folder)
-
-model_label = Label(button_frame, text="Insert the path for the model:")
-model_label.grid(column=0, row=1, padx=3, pady=3)
-model_fill = Entry(button_frame, width=40, textvariable=path_to_model)
-model_fill.grid(column=1, row=1, padx=3, pady=3)
-model_button = Button(button_frame, text="Browse", command=lambda: get_path(path_to_model, 'm'))
-model_button.grid(column=2, row=1, padx=3, pady=3)
-image_label = Label(button_frame, text="Insert the path for images' folder:")
-image_label.grid(column=0, row=2, padx=3, pady=3)
-image_fill = Entry(button_frame, width=40, textvariable=path_to_flowers_folder)
-image_fill.grid(column=1, row=2, padx=3, pady=3)
-image_button = Button(button_frame, text="Browse", command=lambda: get_path(path_to_flowers_folder, 'f'))
-image_button.grid(column=2, row=2, padx=3, pady=3)
-predict_button = Button(button_frame, text="Predict", command=lambda: check_and_predict(path_to_model, path_to_flowers_folder))
-predict_button.grid(column=0, row=3, padx=3, pady=10)
-predict_button = tk.Button(button_frame, text="Clear", command=clear(result_frame))
-predict_button.grid(column=1, row=3, padx=3, pady=10)
+# initialize labels and buttons
+init_gui(path_to_model, path_to_flowers_folder)
 
 root.mainloop()
