@@ -46,6 +46,13 @@ valid_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_
 
 # Model
 
+# use model.add() to add any layers you like
+# read Keras documentation to find which layers you can use:
+#           https://keras.io/layers/core/
+#           https://keras.io/layers/convolutional/
+#           https://keras.io/layers/pooling/
+#
+
 model = models.Sequential()
 
 model.add(layers.Conv2D(filters=32, kernel_size=(4, 4), input_shape=(128, 128, 3), padding='Same', activation='relu'))
@@ -74,13 +81,6 @@ model.add(layers.Dense(512, activation='relu'))
 
 model.add(layers.Dropout(0.5))
 
-# use model.add() to add any layers you like
-# read Keras documentation to find which layers you can use:
-#           https://keras.io/layers/core/
-#           https://keras.io/layers/convolutional/
-#           https://keras.io/layers/pooling/
-#
-
 # last layer should be with softmax activation function - do not change!!!
 model.add(layers.Dense(classes, activation='softmax'))
 
@@ -89,7 +89,7 @@ model.add(layers.Dense(classes, activation='softmax'))
 optimizer = 'adam'
 
 # fill loss argument using keras.losses.
-    # reads Keras documentation https://keras.io/losses/
+# reads Keras documentation https://keras.io/losses/
 loss ='binary_crossentropy'
 model.compile(loss= loss ,optimizer=optimizer ,metrics=['accuracy'])
 
