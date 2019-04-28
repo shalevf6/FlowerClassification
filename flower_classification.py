@@ -1,11 +1,8 @@
-import keras
-import tkinter
-import tensorflow
 from keras import layers
 from keras import models
+from keras.layers import Activation
 from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
-
 
 def plt_modle(model_hist):
     acc = model_hist.history['acc']
@@ -50,20 +47,32 @@ valid_gen = train.flow_from_directory(flower_path, target_size = (img_size, img_
 # Model
 
 model = models.Sequential()
-model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), input_shape=(128, 128, 3), padding='Same', activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(4, 4), padding='Same'))
+
+model.add(layers.Conv2D(filters=32, kernel_size=(4, 4), input_shape=(128, 128, 3), padding='Same', activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), padding='Same'))
+
+model.add(layers.Conv2D(filters=32, kernel_size=(3, 3), padding='Same', activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), padding='Same'))
+
+model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), padding='Same', activation='relu'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), padding='Same'))
 
 model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), padding='Same', activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(4, 4), padding='Same'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), padding='Same'))
 
 model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), padding='Same', activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(4, 4), padding='Same'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), padding='Same'))
 
 model.add(layers.Conv2D(filters=128, kernel_size=(3, 3), padding='Same', activation='relu'))
-model.add(layers.MaxPooling2D(pool_size=(4, 4), padding='Same'))
+model.add(layers.MaxPooling2D(pool_size=(2, 2), padding='Same'))
 
 model.add(layers.Flatten())
 
+model.add(layers.Dropout(0.5))
+
+model.add(layers.Dense(512, activation='relu'))
+
+model.add(layers.Dropout(0.5))
 
 # use model.add() to add any layers you like
 # read Keras documentation to find which layers you can use:
@@ -77,15 +86,14 @@ model.add(layers.Dense(classes, activation='softmax'))
 
 # fill optimizer argument using one of keras.optimizers.
 # read Keras documentation : https://keras.io/models/model/
-optimizer ='adam'
+optimizer = 'adam'
 
 # fill loss argument using keras.losses.
-# reads Keras documentation https://keras.io/losses/
-loss ='categorical_crossentropy'
+    # reads Keras documentation https://keras.io/losses/
+loss ='binary_crossentropy'
 model.compile(loss= loss ,optimizer=optimizer ,metrics=['accuracy'])
 
 # you can change number of epochs by changing the value of the 'epochs' paramter
-model_hist = model.fit_generator(train_gen, steps_per_epoch=t_steps, epochs= 8 , validation_data=valid_gen, validation_steps=v_steps)
+model_hist = model.fit_generator(train_gen, steps_per_epoch=t_steps, epochs= 25 , validation_data=valid_gen, validation_steps=v_steps)
 model.save('flowers_model.h5')
 plt_modle(model_hist)
-
